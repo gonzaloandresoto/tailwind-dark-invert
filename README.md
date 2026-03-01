@@ -21,6 +21,25 @@ Import it alongside Tailwind CSS in your CSS file:
 
 That's it. Every Tailwind palette color now auto-inverts in dark mode.
 
+## Custom generation
+
+The package ships a pre-built CSS file that works out of the box. If you want to generate a version matched to your exact Tailwind installation (e.g. after a Tailwind update), use the CLI:
+
+```bash
+# Output to a file
+npx tailwind-dark-invert -o dark-palette.css
+
+# Output to stdout
+npx tailwind-dark-invert
+```
+
+Then import your generated file instead:
+
+```css
+@import "tailwindcss";
+@import "./dark-palette.css";
+```
+
 ## How it works
 
 Tailwind v4 defines palette colors as CSS custom properties (`--color-rose-50`, `--color-blue-300`, etc.). This package overrides those variables inside a `.dark` selector, swapping each shade with its mirror:
@@ -51,14 +70,6 @@ red, orange, amber, yellow, lime, green, emerald, teal, cyan, sky, blue, indigo,
 
 - Tailwind CSS v4
 - A `.dark` class on an ancestor element (e.g. `<html class="dark">`)
-
-## Regenerating
-
-The CSS is pre-built and checked into the repo. To regenerate after a Tailwind update:
-
-```bash
-npm run generate
-```
 
 ## License
 

@@ -1,14 +1,18 @@
 {
   "name": "tailwind-dark-invert",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Auto-invert Tailwind CSS v4 palette colors in dark mode. One import, zero config.",
   "main": "index.css",
   "style": "index.css",
   "exports": {
     ".": "./index.css"
   },
+  "bin": {
+    "tailwind-dark-invert": "./bin.mjs"
+  },
   "files": [
-    "index.css"
+    "index.css",
+    "bin.mjs"
   ],
   "scripts": {
     "generate": "node scripts/generate.mjs"
@@ -26,5 +30,9 @@
     "invert",
     "palette"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gonzaloandresoto/tailwind-dark-invert.git"
+  },
   "license": "MIT"
 }

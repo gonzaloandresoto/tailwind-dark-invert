@@ -1,11 +1,8 @@
-import { readFileSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
-import { createRequire } from "node:module";
+#!/usr/bin/env node
 
-const require = createRequire(import.meta.url);
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROOT = join(__dirname, "..");
+import { readFileSync, writeFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { createRequire } from "node:module";
 
 const SHADE_PAIRS = [
   [50, 950],
@@ -15,12 +12,6 @@ const SHADE_PAIRS = [
   [400, 600],
 ];
 
-/**
- * Parses all `--color-{family}-{shade}: {value};` declarations from Tailwind's
- * theme CSS and returns them grouped by color family.
- *
- * @returns {Map<string, Map<number, string>>} family -> shade -> value
- */
 function parseColors(css) {
   const families = new Map();
   const re = /--color-([a-z]+)-(\d+):\s*([^;]+);/g;
@@ -33,11 +24,6 @@ function parseColors(css) {
   return families;
 }
 
-/**
- * Builds a shade -> value mapping where each shade is swapped with its mirror:
- * 50<->950, 100<->900, 200<->800, 300<->700, 400<->600.
- * Shade 500 stays unchanged.
- */
 function invertShades(shades) {
   const inverted = new Map();
 
@@ -67,10 +53,8 @@ function generateCSS(families) {
 
     lines.push(`  /* ${family} */`);
 
-    const sortedShades = [...inverted.entries()].sort(
-      ([a], [b]) => a - b
-    );
-    for (const [shade, value] of sortedShades) {
+    const sorted = [...inverted.entries()].sort(([a], [b]) => a - b);
+    for (const [shade, value] of sorted) {
       lines.push(`  --color-${family}-${shade}: ${value};`);
     }
 
@@ -82,17 +66,39 @@ function generateCSS(families) {
   return lines.join("\n");
 }
 
-const themePath = require.resolve("tailwindcss/theme.css");
+// Resolve tailwindcss from the consumer's project, not from this package
+const cwd = process.cwd();
+const localRequire = createRequire(resolve(cwd, "package.json"));
+
+let themePath;
+try {
+  themePath = localRequire.resolve("tailwindcss/theme.css");
+} catch {
+  console.error(
+    "Error: Could not find tailwindcss in your project.\n" +
+      "Make sure tailwindcss is installed:\n\n" +
+      "  npm install tailwindcss\n"
+  );
+  process.exit(1);
+}
+
 const themeCSS = readFileSync(themePath, "utf-8");
 const families = parseColors(themeCSS);
 const css = generateCSS(families);
 
-writeFileSync(join(ROOT, "index.css"), css);
+const outputFlag = process.argv.indexOf("-o");
+const outputPath =
+  outputFlag !== -1 ? process.argv[outputFlag + 1] : null;
 
-const count = [...families.values()].reduce(
-  (sum, shades) => sum + shades.size,
-  0
-);
-console.log(
-  `Generated index.css — ${families.size} color families, ${count} total shades`
-);
+if (outputPath) {
+  writeFileSync(resolve(cwd, outputPath), css);
+  const count = [...families.values()].reduce(
+    (sum, s) => sum + s.size,
+    0
+  );
+  console.log(
+    `Generated ${outputPath} — ${families.size} color families, ${count} total shades`
+  );
+} else {
+  process.stdout.write(css);
+}
