@@ -66,6 +66,10 @@ All 26 Tailwind v4 color families are covered:
 
 red, orange, amber, yellow, lime, green, emerald, teal, cyan, sky, blue, indigo, violet, purple, fuchsia, pink, rose, slate, gray, zinc, neutral, stone, mauve, olive, mist, taupe
 
+## Works with AI-generated code
+
+AI tools pick Tailwind colors for light mode. This package makes them work in dark mode too. No `dark:` variants, no double classes, no fixing the output.
+
 ## Requirements
 
 - Tailwind CSS v4
